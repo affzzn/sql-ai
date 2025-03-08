@@ -20,14 +20,20 @@ function sendCommand() {
     .then((response) => response.json())
     .then((data) => {
       if (data.status === "success") {
-        let sqlQuery = data.sqlQuery.trim();
-        sqlQuery = sqlQuery.replace(/^\s*```sql|\s*```$/g, "").trim();
-
         let aiMessage = document.createElement("div");
         aiMessage.className = "chat-message bot";
-        aiMessage.innerText = sqlQuery;
+        aiMessage.innerText = data.sqlQuery;
         chatBox.appendChild(aiMessage);
         chatBox.scrollTop = chatBox.scrollHeight;
+
+        // If the query fetched results, display them
+        if (data.data) {
+          let resultMessage = document.createElement("div");
+          resultMessage.className = "chat-message bot";
+          resultMessage.innerText = JSON.stringify(data.data, null, 2);
+          chatBox.appendChild(resultMessage);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
       }
     })
     .catch((error) => {

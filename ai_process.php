@@ -53,7 +53,7 @@ $requestPayload = json_encode([
         [
             "parts" => [
                 [
-                    "text" => "Given the following database schema: {$tableSchema}\nConvert this request into a MySQL query: \"$prompt\". Output only the SQL query and nothing else."
+                    "text" => "Given the following database schema: {$tableSchema}\nConvert this request into a MySQL query: \"$prompt\". Output only the raw SQL query without any code formatting like ```sql or ```."
                 ]
             ]
         ]
@@ -85,7 +85,9 @@ if (!isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
     exit();
 }
 
+// Extract and clean the SQL query
 $sqlQuery = trim($responseData['candidates'][0]['content']['parts'][0]['text']);
+$sqlQuery = preg_replace('/```sql|```/', '', $sqlQuery); // Remove markdown formatting
 
 // Execute the generated SQL query
 if (str_starts_with(strtolower($sqlQuery), "select")) {
@@ -93,14 +95,14 @@ if (str_starts_with(strtolower($sqlQuery), "select")) {
     $result = $conn->query($sqlQuery);
     if ($result) {
         $data = $result->fetch_all(MYSQLI_ASSOC);
-        echo json_encode(["status" => "success", "query" => $sqlQuery, "data" => $data]);
+        echo json_encode(["status" => "success", "sqlQuery" => $sqlQuery, "data" => $data]);
     } else {
         echo json_encode(["status" => "error", "message" => "Query execution failed: " . $conn->error]);
     }
 } else {
     // INSERT, UPDATE, DELETE Queries: Execute and confirm
     if ($conn->query($sqlQuery) === TRUE) {
-        echo json_encode(["status" => "success", "query" => $sqlQuery, "message" => "Query executed successfully"]);
+        echo json_encode(["status" => "success", "sqlQuery" => $sqlQuery, "message" => "Query executed successfully"]);
     } else {
         echo json_encode(["status" => "error", "message" => "Query execution failed: " . $conn->error]);
     }
