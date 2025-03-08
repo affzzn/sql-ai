@@ -4,7 +4,7 @@ $host = "localhost";      // Host name (usually 'localhost' when using XAMPP)
 $username = "root";       // Default username in XAMPP
 $password = "";           // Default password is empty in XAMPP
 $dbname = "green_team"; // Replace with your actual database name
-
+//checking
 // Create connection
 $conn = new mysqli($host, $username, $password, $dbname);
 
