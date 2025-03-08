@@ -19,9 +19,9 @@ try {
         status 
     FROM users 
     WHERE user_type = 'volunteer'";
-    
+
     $result = $conn->query($sql);
-    
+
     if (!$result) {
         throw new Exception("Query failed: " . $conn->error);
     }
@@ -34,11 +34,11 @@ try {
         $volunteers[] = $row;
     }
 
+    // Return JSON response
     echo json_encode([
         'status' => 'success',
         'data' => $volunteers
     ]);
-
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode([

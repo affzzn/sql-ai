@@ -1,8 +1,14 @@
 // Fetch volunteers and display them as cards
 function fetchVolunteers() {
     fetch('get_volunteers.php')  // Make sure this points to your correct PHP file
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json(); // Parse JSON
+        })
         .then(data => {
+            console.log(data); // Log the response to check
             if (data.status === 'success') {
                 displayVolunteers(data.data);
             } else {
