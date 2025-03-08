@@ -15,7 +15,7 @@ if (empty($prompt)) {
 }
 
 // API Key for Gemini (replace with your actual API key)
-$apiKey = 'AIzaSyABVodgRCwoOi4PCEmWuz_2AbdXXsXze7E';
+$apiKey = 'key';
 $geminiModel = 'gemini-2.0-flash'; // Model you want to use
 
 // The table schema for MySQL (Users Table)
