@@ -1,21 +1,34 @@
 <?php
 // ai_process.php
 
-// Set the content-type to JSON
 header('Content-Type: application/json');
+
+// Database credentials
+$host = "localhost";      // Host name (usually 'localhost' when using XAMPP)
+$username = "root";       // Default username in XAMPP
+$password = "";           // Default password is empty in XAMPP
+$dbname = "green_team";   // Replace with your actual database name
+
+// Create connection
+$conn = new mysqli($host, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    echo json_encode(["status" => "error", "message" => "Database connection failed: " . $conn->connect_error]);
+    exit();
+}
 
 // Get the user prompt from the POST request
 $data = json_decode(file_get_contents("php://input"));
 $prompt = $data->prompt ?? '';
 
-// Validate prompt
 if (empty($prompt)) {
     echo json_encode(["status" => "error", "message" => "Prompt is required"]);
     exit();
 }
 
 // API Key for Gemini (replace with your actual API key)
-$apiKey = 'AIzaSyABVodgRCwoOi4PCEmWuz_2AbdXXsXze7E';
+$apiKey = 'YOUR_GEMINI_API_KEY';
 $geminiModel = 'gemini-2.0-flash'; // Model you want to use
 
 // The table schema for MySQL (Users Table)
@@ -67,10 +80,32 @@ curl_close($ch);
 $responseData = json_decode($response, true);
 
 // Check if the response contains the generated SQL query
-if (isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
-    $sqlQuery = $responseData['candidates'][0]['content']['parts'][0]['text'];
-    echo json_encode(["status" => "success", "sqlQuery" => $sqlQuery]);
-} else {
+if (!isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
     echo json_encode(["status" => "error", "message" => "No SQL query generated"]);
+    exit();
 }
+
+$sqlQuery = trim($responseData['candidates'][0]['content']['parts'][0]['text']);
+
+// Execute the generated SQL query
+if (str_starts_with(strtolower($sqlQuery), "select")) {
+    // SELECT Queries: Fetch and return data
+    $result = $conn->query($sqlQuery);
+    if ($result) {
+        $data = $result->fetch_all(MYSQLI_ASSOC);
+        echo json_encode(["status" => "success", "query" => $sqlQuery, "data" => $data]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Query execution failed: " . $conn->error]);
+    }
+} else {
+    // INSERT, UPDATE, DELETE Queries: Execute and confirm
+    if ($conn->query($sqlQuery) === TRUE) {
+        echo json_encode(["status" => "success", "query" => $sqlQuery, "message" => "Query executed successfully"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Query execution failed: " . $conn->error]);
+    }
+}
+
+// Close database connection
+$conn->close();
 ?>
