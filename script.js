@@ -76,27 +76,37 @@ window.onload = function () {
   fetchVolunteers();
 };
 
-function updateVolunteerList(volunteers) {
-  const container = document.getElementById("volunteersContainer");
+function showQueryResults(volunteers) {
+  const modal = document.getElementById("queryResultModal");
+  const container = document.getElementById("queryResultsContainer");
   container.innerHTML = ""; // Clear previous content
 
   if (volunteers.length === 0) {
-    displayErrorMessage("No matching volunteers found.");
-    return;
+    container.innerHTML = "<p>No matching volunteers found.</p>";
+  } else {
+    volunteers.forEach((volunteer) => {
+      const card = document.createElement("div");
+      card.classList.add("query-card");
+
+      card.innerHTML = `
+              <h3>${volunteer.first_name} ${volunteer.last_name}</h3>
+              <p><strong>Email:</strong> ${volunteer.email}</p>
+              <p><strong>Phone:</strong> ${volunteer.phone}</p>
+              <p><strong>Date of Birth:</strong> ${
+                volunteer.date_of_birth || "N/A"
+              }</p>
+              <p><strong>Status:</strong> ${volunteer.status}</p>
+          `;
+
+      container.appendChild(card);
+    });
   }
 
-  volunteers.forEach((volunteer) => {
-    const card = document.createElement("div");
-    card.classList.add("card");
+  // Show the modal
+  modal.style.display = "flex";
+}
 
-    card.innerHTML = `
-            <h2>${volunteer.first_name} ${volunteer.last_name}</h2>
-            <p>Email: ${volunteer.email}</p>
-            <p>Phone: ${volunteer.phone}</p>
-            <p>Date of Birth: ${volunteer.date_of_birth || "N/A"}</p>
-            <p>Status: ${volunteer.status}</p>
-        `;
-
-    container.appendChild(card);
-  });
+// Close modal function
+function closeModal() {
+  document.getElementById("queryResultModal").style.display = "none";
 }
