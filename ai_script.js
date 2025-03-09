@@ -130,6 +130,14 @@ function sendCommand() {
                         generateReport(data.data); // Generate and download the report
                     };
                     tableMessage.appendChild(downloadButton); // Add to the message container
+
+                    // Add the "Generate Insights" button
+                    const insightsButton = document.createElement("button");
+                    insightsButton.innerText = "Generate Insights";
+                    insightsButton.onclick = function() {
+                        generateInsights(data.data); // Call generateInsights with the report data
+                    };
+                    tableMessage.appendChild(insightsButton); // Add to the message container
                 } else {
                     // For INSERT, UPDATE, or DELETE, refresh volunteer directory
                     fetchVolunteers();
@@ -141,6 +149,38 @@ function sendCommand() {
         });
 
     document.getElementById("aiCommand").value = "";
+}
+
+function generateInsights(data) {
+    const chatBox = document.getElementById("chatBox");
+    const insightsMessage = document.createElement("div");
+    insightsMessage.className = "chat-message bot";
+    insightsMessage.innerText = "Generating insights..."; // Placeholder message
+    chatBox.appendChild(insightsMessage);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Send a request to the backend to generate insights using Gemini API
+    fetch("generate_insights.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            prompt: "Generate insights based on the provided dataset.", // Modify as needed
+            data: data // Pass the generated report data to Gemini
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.status === "success") {
+                insightsMessage.innerText = "Insights: " + data.insights;
+            } else {
+                insightsMessage.innerText = "Error generating insights.";
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch((error) => {
+            insightsMessage.innerText = "Error processing insights request.";
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
 }
 
 document
