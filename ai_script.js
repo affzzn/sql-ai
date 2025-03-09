@@ -41,3 +41,9 @@ function sendCommand() {
 
   document.getElementById("aiCommand").value = "";
 }
+document.getElementById("aiCommand").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        event.preventDefault();  // Prevent the default action (e.g., newline)
+        sendCommand();  // Trigger sendCommand when Enter is pressed
+    }
+});

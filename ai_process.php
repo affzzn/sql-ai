@@ -28,7 +28,7 @@ if (empty($prompt)) {
 }
 
 // API Key for Gemini (replace with your actual API key)
-$apiKey = 'YOUR_GEMINI_API_KEY';
+$apiKey = 'key';
 $geminiModel = 'gemini-2.0-flash';
 
 // Full database schema including constraints
