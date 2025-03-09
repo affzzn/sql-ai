@@ -21,7 +21,7 @@ error_log("Received prompt: " . $prompt);
 error_log("Received report data: " . print_r($reportData, true));
 
 // API Key for Gemini (replace with your actual API key)
-$apiKey = 'keyy'; // Replace with your Gemini API key
+$apiKey = 'ke'; // Replace with your Gemini API key
 $geminiModel = 'gemini-2.0-flash'; // Model you want to use
 
 // Prepare the request payload for the Gemini API

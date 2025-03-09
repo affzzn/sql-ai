@@ -28,7 +28,7 @@ if (empty($prompt)) {
 }
 
 // API Key for Gemini (replace with your actual API key)
-$apiKey = 'kyyy';
+$apiKey = 'keyy';
 $geminiModel = 'gemini-2.0-flash';
 
 // Full database schema including constraints
@@ -147,6 +147,17 @@ $requestPayload = json_encode([
     ]
 ]);
 
+// Prepare the API request payload for Gemini API
+$requestPayload = json_encode([
+    "contents" => [
+        [
+            "parts" => [
+                ["text" => $databaseSchema]
+            ]
+        ]
+    ]
+]);
+
 // Call the Gemini API
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, "https://generativelanguage.googleapis.com/v1/models/{$geminiModel}:generateContent?key={$apiKey}");
@@ -157,7 +168,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 $response = curl_exec($ch);
 
 if ($response === false) {
-    echo json_encode(["status" => "error", "message" => "Failed to call Gemini API"]);
+    echo json_encode(["status" => "error", "message" => "Failed to call Gemini API. Please try again later."]);
     exit();
 }
 
@@ -168,7 +179,7 @@ $responseData = json_decode($response, true);
 
 // Check if the response contains the generated SQL query
 if (!isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
-    echo json_encode(["status" => "error", "message" => "No SQL query generated"]);
+    echo json_encode(["status" => "error", "message" => "Gemini was unable to generate a valid SQL query. Please refine your request."]);
     exit();
 }
 
@@ -180,7 +191,6 @@ $sqlQuery = preg_replace('/```sql|```/', '', $sqlQuery);
 
 // Trim leftover whitespace
 $sqlQuery = trim($sqlQuery);
-
 
 // Execute the generated SQL query
 if (str_starts_with(strtolower($sqlQuery), "select")) {
