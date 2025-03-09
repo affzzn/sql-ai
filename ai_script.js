@@ -26,9 +26,12 @@ function sendCommand() {
         chatBox.appendChild(aiMessage);
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        // If the query fetched results (SELECT queries), display them in a modal
+        // If the query fetched results, display them dynamically
         if (data.data) {
-          showQueryResults(data.data);
+          updateVolunteerList(data.data); // Dynamically update the volunteer list
+        } else {
+          // If it's an INSERT/UPDATE/DELETE query, re-fetch volunteers
+          fetchVolunteers();
         }
       }
     })

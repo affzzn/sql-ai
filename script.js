@@ -44,25 +44,28 @@ function displayVolunteers(volunteers) {
   });
 }
 
+// Search volunteers by name, email, or phone
 function searchVolunteers() {
-  const searchTerm = document.getElementById("searchInput").value.toLowerCase();
-  const allVolunteers = document.querySelectorAll(".card");
+  const searchTerm = document.getElementById("searchInput").value;
+  const searchParams = new URLSearchParams();
 
-  allVolunteers.forEach((card) => {
-    const name = card.querySelector("h2").innerText.toLowerCase();
-    const email = card.querySelector("p:nth-child(2)").innerText.toLowerCase();
-    const phone = card.querySelector("p:nth-child(3)").innerText.toLowerCase();
+  if (searchTerm) {
+    searchParams.append("search", searchTerm);
+  }
 
-    if (
-      name.includes(searchTerm) ||
-      email.includes(searchTerm) ||
-      phone.includes(searchTerm)
-    ) {
-      card.style.display = "block";
-    } else {
-      card.style.display = "none";
-    }
-  });
+  fetch(`search_volunteers.php?${searchParams.toString()}`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === "success") {
+        displayVolunteers(data.data);
+      } else {
+        displayErrorMessage("No volunteers found");
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      displayErrorMessage("Error searching volunteers");
+    });
 }
 
 // Display error messages
@@ -76,37 +79,27 @@ window.onload = function () {
   fetchVolunteers();
 };
 
-function showQueryResults(volunteers) {
-  const modal = document.getElementById("queryResultModal");
-  const container = document.getElementById("queryResultsContainer");
+function updateVolunteerList(volunteers) {
+  const container = document.getElementById("volunteersContainer");
   container.innerHTML = ""; // Clear previous content
 
   if (volunteers.length === 0) {
-    container.innerHTML = "<p>No matching volunteers found.</p>";
-  } else {
-    volunteers.forEach((volunteer) => {
-      const card = document.createElement("div");
-      card.classList.add("query-card");
-
-      card.innerHTML = `
-              <h3>${volunteer.first_name} ${volunteer.last_name}</h3>
-              <p><strong>Email:</strong> ${volunteer.email}</p>
-              <p><strong>Phone:</strong> ${volunteer.phone}</p>
-              <p><strong>Date of Birth:</strong> ${
-                volunteer.date_of_birth || "N/A"
-              }</p>
-              <p><strong>Status:</strong> ${volunteer.status}</p>
-          `;
-
-      container.appendChild(card);
-    });
+    displayErrorMessage("No matching volunteers found.");
+    return;
   }
 
-  // Show the modal
-  modal.style.display = "flex";
-}
+  volunteers.forEach((volunteer) => {
+    const card = document.createElement("div");
+    card.classList.add("card");
 
-// Close modal function
-function closeModal() {
-  document.getElementById("queryResultModal").style.display = "none";
+    card.innerHTML = `
+            <h2>${volunteer.first_name} ${volunteer.last_name}</h2>
+            <p>Email: ${volunteer.email}</p>
+            <p>Phone: ${volunteer.phone}</p>
+            <p>Date of Birth: ${volunteer.date_of_birth || "N/A"}</p>
+            <p>Status: ${volunteer.status}</p>
+        `;
+
+    container.appendChild(card);
+  });
 }
