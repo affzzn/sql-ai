@@ -174,7 +174,13 @@ if (!isset($responseData['candidates'][0]['content']['parts'][0]['text'])) {
 
 // Extract and clean the SQL query
 $sqlQuery = trim($responseData['candidates'][0]['content']['parts'][0]['text']);
-$sqlQuery = preg_replace('/```sql|```/', '', $sqlQuery); // Remove markdown formatting
+
+// Remove markdown fences like ```sql ... ```
+$sqlQuery = preg_replace('/```sql|```/', '', $sqlQuery);
+
+// Trim leftover whitespace
+$sqlQuery = trim($sqlQuery);
+
 
 // Execute the generated SQL query
 if (str_starts_with(strtolower($sqlQuery), "select")) {
