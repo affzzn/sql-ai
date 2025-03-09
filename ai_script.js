@@ -26,13 +26,12 @@ function sendCommand() {
         chatBox.appendChild(aiMessage);
         chatBox.scrollTop = chatBox.scrollHeight;
 
-        // If the query fetched results, display them
+        // If the query fetched results, display them dynamically
         if (data.data) {
-          let resultMessage = document.createElement("div");
-          resultMessage.className = "chat-message bot";
-          resultMessage.innerText = JSON.stringify(data.data, null, 2);
-          chatBox.appendChild(resultMessage);
-          chatBox.scrollTop = chatBox.scrollHeight;
+          updateVolunteerList(data.data); // Dynamically update the volunteer list
+        } else {
+          // If it's an INSERT/UPDATE/DELETE query, re-fetch volunteers
+          fetchVolunteers();
         }
       }
     })

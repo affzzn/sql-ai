@@ -75,3 +75,28 @@ function displayErrorMessage(message) {
 window.onload = function () {
   fetchVolunteers();
 };
+
+function updateVolunteerList(volunteers) {
+  const container = document.getElementById("volunteersContainer");
+  container.innerHTML = ""; // Clear previous content
+
+  if (volunteers.length === 0) {
+    displayErrorMessage("No matching volunteers found.");
+    return;
+  }
+
+  volunteers.forEach((volunteer) => {
+    const card = document.createElement("div");
+    card.classList.add("card");
+
+    card.innerHTML = `
+            <h2>${volunteer.first_name} ${volunteer.last_name}</h2>
+            <p>Email: ${volunteer.email}</p>
+            <p>Phone: ${volunteer.phone}</p>
+            <p>Date of Birth: ${volunteer.date_of_birth || "N/A"}</p>
+            <p>Status: ${volunteer.status}</p>
+        `;
+
+    container.appendChild(card);
+  });
+}
