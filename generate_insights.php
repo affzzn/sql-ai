@@ -21,7 +21,7 @@ error_log("Received prompt: " . $prompt);
 error_log("Received report data: " . print_r($reportData, true));
 
 // API Key for Gemini (replace with your actual API key)
-$apiKey = 'key'; // Replace with your Gemini API key
+$apiKey = 'keyy'; // Replace with your Gemini API key
 $geminiModel = 'gemini-2.0-flash'; // Model you want to use
 
 // Prepare the request payload for the Gemini API
@@ -36,7 +36,12 @@ $requestPayload = json_encode([
                     "3. Comparative Insights: Compare different datasets or entities.\n" .
                     "4. Correlation Insights: Suggest correlations between different variables.\n\n" .
                     "Please apply the most suitable approach from the above to the following dataset and provide brief insights:\n" .
-                    json_encode($reportData) // Provide the report data
+                    json_encode($reportData) . "\n\n" .
+                    "For the output, follow this format:\n" .
+                    "1. Provide insights in a simple, clear text format, without extra markdown, bullet points, or unnecessary noise.\n" .
+                    "2. Make sure the insights are concise, focusing only on the key findings without elaborating too much.\n" .
+                    "2. End with a **brief summary** of the entire data report, summarizing the major points. Provide the summary in clear, plain text with no extra formatting.\n" .
+                    "Do not add unnecessary descriptions or markdown formatting. Just plain text, brief, and insightful."
                 ]
             ]
         ]
