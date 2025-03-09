@@ -4,10 +4,10 @@
 header('Content-Type: application/json');
 
 // Database credentials
-$host = "localhost";      // Host name (usually 'localhost' when using XAMPP)
-$username = "root";       // Default username in XAMPP
-$password = "";           // Default password is empty in XAMPP
-$dbname = "green_team";   // Replace with your actual database name
+$host = "localhost";
+$username = "root";
+$password = "";
+$dbname = "green_team"; 
 
 // Create connection
 $conn = new mysqli($host, $username, $password, $dbname);
@@ -29,11 +29,13 @@ if (empty($prompt)) {
 
 // API Key for Gemini (replace with your actual API key)
 $apiKey = 'YOUR_GEMINI_API_KEY';
-$geminiModel = 'gemini-2.0-flash'; // Model you want to use
+$geminiModel = 'gemini-2.0-flash';
 
-// The table schema for MySQL (Users Table)
-$tableSchema = "
-Users Table (Volunteers, Participants, Staff):
+// Full database schema including constraints
+$databaseSchema = "
+DATABASE: green_team
+
+-- Users Table (Volunteers, Participants, Staff)
 CREATE TABLE users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
     first_name VARCHAR(50) NOT NULL,
@@ -45,6 +47,93 @@ CREATE TABLE users (
     join_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status ENUM('active', 'inactive', 'pending') DEFAULT 'active'
 );
+
+-- Programs Table (Green Team Programs)
+CREATE TABLE programs (
+    program_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    age_group VARCHAR(20),
+    status ENUM('active', 'inactive') DEFAULT 'active'
+);
+
+-- Events Table (Events for Programs)
+CREATE TABLE events (
+    event_id INT PRIMARY KEY AUTO_INCREMENT,
+    program_id INT,
+    event_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    event_date DATE NOT NULL,
+    location VARCHAR(255),
+    max_capacity INT DEFAULT 0,
+    price DECIMAL(10,2) DEFAULT 0.00,
+    payment_required BOOLEAN DEFAULT FALSE,
+    status ENUM('upcoming', 'completed', 'cancelled') DEFAULT 'upcoming',
+    FOREIGN KEY (program_id) REFERENCES programs(program_id) ON DELETE SET NULL
+);
+
+-- Event Participants Table (Track Event Attendance)
+CREATE TABLE event_participants (
+    participant_id INT PRIMARY KEY AUTO_INCREMENT,
+    event_id INT NOT NULL,
+    user_id INT NOT NULL,
+    registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    payment_status ENUM('pending', 'paid', 'waived') DEFAULT 'pending',
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Volunteer Skills Table
+CREATE TABLE volunteer_skills (
+    skill_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    skill_name VARCHAR(100) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Feedback Table (Track Feedback & Ratings)
+CREATE TABLE feedback (
+    feedback_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    event_id INT,
+    comments TEXT,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    submitted_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE SET NULL
+);
+
+-- Donations Table (Financial Contributions)
+CREATE TABLE donations (
+    donation_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    amount DECIMAL(10,2) NOT NULL,
+    donation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+-- Audit Log Table (Tracks System Changes)
+CREATE TABLE audit_log (
+    log_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    action_type VARCHAR(100) NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+-- User Authentication Table (Login System)
+CREATE TABLE user_authentication (
+    auth_id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Other tables omitted for brevity. They follow the same constraint handling.
+
+-- Based on the schema above, generate a MySQL query for the following request:
+\"$prompt\"
+Ensure that the response contains only the raw SQL query without any formatting, markdown, or extra text.
 ";
 
 // Prepare the API request payload
@@ -52,9 +141,7 @@ $requestPayload = json_encode([
     "contents" => [
         [
             "parts" => [
-                [
-                    "text" => "Given the following database schema: {$tableSchema}\nConvert this request into a MySQL query: \"$prompt\". Output only the raw SQL query without any code formatting like ```sql or ```."
-                ]
+                ["text" => $databaseSchema]
             ]
         ]
     ]
